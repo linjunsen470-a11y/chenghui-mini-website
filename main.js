@@ -22,27 +22,68 @@ function updateMusicToggle() {
 }
 
 if (music && musicToggle) {
+  const preferenceKey = 'chenghui-background-music';
+  let musicEnabled = true;
+  try {
+    musicEnabled = localStorage.getItem(preferenceKey) !== 'off';
+  } catch {
+    // Music still works when a web-view disables local storage.
+  }
+
+  function rememberMusicPreference() {
+    try {
+      localStorage.setItem(preferenceKey, musicEnabled ? 'on' : 'off');
+    } catch {
+      // The current page still keeps the choice.
+    }
+  }
+
+  function startMusic(fromToggle = false) {
+    if (!musicEnabled || !music.paused || (document.hidden && !fromToggle)) return;
+    if (!music.hasAttribute('src')) {
+      music.src = music.dataset.src;
+    } else if (music.error && fromToggle) {
+      music.load();
+    }
+    music.play()?.catch((error) => {
+      updateMusicToggle();
+      if (fromToggle && error.name !== 'AbortError') {
+        showFeedback('音乐播放失败，请点按重试');
+      }
+    });
+  }
+
   musicToggle.hidden = false;
   for (const event of ['play', 'pause', 'ended', 'error']) {
     music.addEventListener(event, updateMusicToggle);
   }
   musicToggle.addEventListener('click', () => {
-    if (!music.paused) {
+    musicEnabled = music.paused;
+    rememberMusicPreference();
+    if (musicEnabled) {
+      startMusic(true);
+    } else {
       music.pause();
-      return;
     }
-    if (!music.hasAttribute('src')) {
-      music.src = music.dataset.src;
-    } else if (music.error) {
-      music.load();
-    }
-    music.play()?.catch((error) => {
-      if (error.name !== 'AbortError') {
-        updateMusicToggle();
-        showFeedback('音乐播放失败，请点按重试');
-      }
-    });
   });
+
+  // WeChat may allow playback once its bridge is ready. Other clients can
+  // require a real tap, so also retry inside that event's activation window.
+  document.addEventListener('WeixinJSBridgeReady', () => startMusic(), { once: true });
+  function startOnInteraction(event) {
+    if (event.isTrusted && !musicToggle.contains(event.target)) startMusic();
+  }
+  document.addEventListener('click', startOnInteraction, { capture: true });
+  document.addEventListener('touchend', startOnInteraction, { capture: true, passive: true });
+
+  const cover = document.querySelector('.cover-mosaic img');
+  const afterCoverPaint = () => requestAnimationFrame(() => requestAnimationFrame(() => startMusic()));
+  if (!cover || cover.complete) {
+    afterCoverPaint();
+  } else {
+    cover.addEventListener('load', afterCoverPaint, { once: true });
+    cover.addEventListener('error', afterCoverPaint, { once: true });
+  }
 }
 
 function copyWithSelection(text) {
@@ -136,10 +177,12 @@ if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-mot
   const observer = new IntersectionObserver((entries) => {
     for (const entry of entries) {
       if (!entry.isIntersecting) continue;
-      entry.target.classList.add('is-entering');
+      entry.target.classList.add('h5-enter');
       observer.unobserve(entry.target);
     }
-  }, { threshold: 0 });
+  }, { rootMargin: '0px 0px -24px 0px' });
 
-  document.querySelectorAll('[data-reveal]').forEach((panel) => observer.observe(panel));
+  document.querySelectorAll(
+    '[data-reveal] > :is(.panel-heading, .copy, .artwork, .meal-photos, .quality-group, .values-logo, .values-art)'
+  ).forEach((block) => observer.observe(block));
 }

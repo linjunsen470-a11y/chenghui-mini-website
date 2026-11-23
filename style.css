@@ -26,6 +26,7 @@ body {
 }
 
 img { display: block; }
+img[hidden] { display: none; }
 img[data-src] { visibility: hidden; }
 a { color: inherit; }
 button { font: inherit; }
@@ -91,6 +92,28 @@ a:focus-visible, button:focus-visible, summary:focus-visible {
 
 .panel--cover {
   padding: calc(.5rem + env(safe-area-inset-top, 0px)) 0 .75rem;
+}
+
+.cover-next {
+  display: flex;
+  width: fit-content;
+  min-height: 44px;
+  margin-inline: auto;
+  align-items: center;
+  gap: .55rem;
+  padding-inline: .75rem;
+  color: var(--green-ink);
+  font-size: .875rem;
+  text-decoration: none;
+}
+
+.cover-next::before {
+  width: .5rem;
+  height: .5rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  content: "";
 }
 
 .panel--chapter {
@@ -445,17 +468,47 @@ a:focus-visible, button:focus-visible, summary:focus-visible {
 .image-dialog img { max-width: 100%; height: auto; }
 
 @media (prefers-reduced-motion: no-preference) {
-  .cover-intro > img, .cover-service > img { animation: arrive 380ms ease-out both; }
-  .cover-service > img { animation-delay: var(--delay, 80ms); }
-  .panel.is-entering > .panel-heading, .panel.is-entering > .copy {
-    animation: arrive 320ms ease-out both;
+  .cover-logo > img, .cover-signature > img {
+    --enter-scale: .86;
+    animation: h5-arrive 580ms cubic-bezier(.2, .7, .25, 1) both;
   }
-  .panel.is-entering > .artwork, .panel.is-entering > .quality-group {
-    animation: arrive 380ms ease-out 55ms both;
+  .cover-signature > img { animation-delay: 420ms; }
+
+  .cover-title > img {
+    --enter-y: -.85rem;
+    animation: h5-arrive 580ms ease-out 110ms both;
   }
-  @keyframes arrive {
-    from { opacity: .68; transform: translateY(.45rem); }
-    to { opacity: 1; transform: translateY(0); }
+
+  .cover-mosaic > img { animation: cover-reveal 640ms ease-out both; }
+  .cover-service > img { animation: h5-arrive 540ms ease-out var(--delay) both; }
+  .cover-next::before { animation: scroll-nudge 1.3s ease-in-out 700ms 3; }
+
+  .h5-enter {
+    --enter-y: .85rem;
+    animation: h5-arrive 540ms cubic-bezier(.2, .7, .25, 1) both;
+  }
+
+  .panel-heading.h5-enter { --enter-x: -.7rem; --enter-y: 0px; }
+  .panel--paper .artwork.h5-enter { --enter-x: .7rem; --enter-y: 0px; }
+  .panel--paper .artwork.h5-enter:nth-of-type(even) { --enter-x: -.7rem; }
+  .panel--chapter .h5-enter, .values-logo.h5-enter { --enter-scale: .94; }
+
+  @keyframes h5-arrive {
+    from {
+      opacity: .44;
+      transform: translate(var(--enter-x, 0px), var(--enter-y, 0px)) scale(var(--enter-scale, 1));
+    }
+    to { opacity: 1; transform: translate(0, 0) scale(1); }
+  }
+
+  @keyframes cover-reveal {
+    from { clip-path: inset(0 12% 0 5%); }
+    to { clip-path: inset(0); }
+  }
+
+  @keyframes scroll-nudge {
+    0%, 100% { transform: translateY(0) rotate(45deg); }
+    50% { transform: translateY(.25rem) rotate(45deg); }
   }
 }
 
