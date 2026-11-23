@@ -69,6 +69,111 @@ a:focus-visible, button:focus-visible, summary:focus-visible {
 .music-toggle[hidden] { display: none; }
 .music-toggle[aria-pressed="true"] { color: #fff; background: var(--brand-dark); }
 
+.book-open { overflow: hidden; padding-block: 0; }
+
+.site.is-book {
+  --book-foot: calc(4rem + env(safe-area-inset-bottom, 0px));
+  position: relative;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 0;
+  background: #e8efe9;
+  perspective: 1050px;
+}
+
+.is-book > section {
+  position: absolute;
+  inset: 0 0 var(--book-foot);
+  display: none;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  transform-origin: center;
+}
+
+.is-book > .panel--cover { background: #fff; }
+
+.is-book > .book-current,
+.is-book > .book-preview { display: block; }
+
+.is-book > .book-current { z-index: 2; box-shadow: 0 .65rem 1.5rem #18362726; }
+.is-book > .book-preview { z-index: 1; pointer-events: none; }
+
+.is-book > .chapters {
+  position: absolute;
+  z-index: 4;
+  right: .75rem;
+  bottom: calc(var(--book-foot) + .45rem);
+  left: .75rem;
+  display: none;
+  border: 1px solid #cfdfd3;
+  border-radius: .8rem;
+  box-shadow: 0 .5rem 1.75rem #142b2040;
+}
+
+.is-book.is-directory-open > .chapters { display: block; }
+
+.book-controls {
+  position: absolute;
+  z-index: 3;
+  inset: auto .75rem calc(.4rem + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  gap: .3rem;
+  padding: .1rem .2rem;
+  border: 1px solid #d2dfd5;
+  border-radius: .7rem;
+  color: var(--green-ink);
+  background: #f8fbf8;
+}
+
+.book-controls[hidden] { display: none; }
+
+.book-controls button {
+  display: grid;
+  min-width: 44px;
+  min-height: 44px;
+  place-items: center;
+  padding: 0 .625rem;
+  border: 0;
+  border-radius: .45rem;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.book-controls button:hover, .book-directory[aria-expanded="true"] { background: #e7f2e9; }
+.book-controls button:disabled { opacity: .32; cursor: default; }
+
+.book-position {
+  margin-inline: auto;
+  color: var(--ink);
+  font-size: .875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.book-step::before {
+  width: .55rem;
+  height: .55rem;
+  border-right: 2px solid;
+  border-bottom: 2px solid;
+  transform: translateY(.1rem) rotate(225deg);
+  content: "";
+}
+
+.book-step[data-step="1"]::before { transform: translateY(-.1rem) rotate(45deg); }
+
+@media (max-height: 700px) {
+  .is-book > .panel--cover .artwork {
+    width: min(100%, calc((100vh - var(--book-foot) - 70px) / 1.54062));
+    width: min(100%, calc((100dvh - var(--book-foot) - 70px) / 1.54062));
+    margin-inline: auto;
+  }
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -468,6 +573,11 @@ a:focus-visible, button:focus-visible, summary:focus-visible {
 .image-dialog img { max-width: 100%; height: auto; }
 
 @media (prefers-reduced-motion: no-preference) {
+  .music-toggle > span { animation: music-spin 3.6s linear infinite paused; }
+  .music-toggle[aria-pressed="true"] > span { animation-play-state: running; }
+
+  @keyframes music-spin { to { transform: rotate(360deg); } }
+
   .cover-logo > img, .cover-signature > img {
     --enter-scale: .86;
     animation: h5-arrive 580ms cubic-bezier(.2, .7, .25, 1) both;
