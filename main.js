@@ -156,6 +156,16 @@ function setupBook(book) {
   const controls = book.querySelector('.book-controls');
   const position = book.querySelector('.book-position');
   const directory = book.querySelector('.book-directory');
+  const chapterTitle = directory.querySelector('.book-chapter');
+  const chapterLinks = new Map(Array.from(book.querySelectorAll('.chapters a'), (link) => [
+    link.hash.slice(1), link,
+  ]));
+  let chapter = chapterLinks.get(pages[0].id);
+  const chaptersByPage = pages.map((page) => {
+    chapter = chapterLinks.get(page.id) || chapter;
+    return chapter;
+  });
+  let activeChapter;
   const previous = book.querySelector('[data-step="-1"]');
   const next = book.querySelector('[data-step="1"]');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -172,6 +182,13 @@ function setupBook(book) {
   }
 
   function updateControls() {
+    const currentChapter = chaptersByPage[current];
+    if (activeChapter !== currentChapter) {
+      activeChapter?.removeAttribute('aria-current');
+      activeChapter = currentChapter;
+      activeChapter.setAttribute('aria-current', 'location');
+      chapterTitle.textContent = activeChapter.textContent.trim();
+    }
     position.value = `${current + 1} / ${pages.length}`;
     previous.disabled = current === 0;
     next.disabled = current === pages.length - 1;

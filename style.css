@@ -85,8 +85,9 @@ a:focus-visible, button:focus-visible, summary:focus-visible {
 
 .is-book > section {
   position: absolute;
-  inset: 0 0 var(--book-foot);
+  inset: 0;
   display: none;
+  padding-block-end: var(--book-foot);
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior-y: contain;
@@ -118,16 +119,17 @@ a:focus-visible, button:focus-visible, summary:focus-visible {
 .book-controls {
   position: absolute;
   z-index: 3;
-  inset: auto .75rem calc(.4rem + env(safe-area-inset-bottom, 0px));
+  inset: auto .65rem calc(.45rem + env(safe-area-inset-bottom, 0px)) auto;
   display: flex;
-  min-height: 48px;
+  max-width: calc(100% - 1.3rem);
   align-items: center;
-  gap: .3rem;
-  padding: .1rem .2rem;
+  gap: .1rem;
+  padding: 0 .16rem;
   border: 1px solid #d2dfd5;
-  border-radius: .7rem;
+  border-radius: 999px;
   color: var(--green-ink);
   background: #f8fbf8;
+  box-shadow: 0 .2rem .85rem #18362726;
 }
 
 .book-controls[hidden] { display: none; }
@@ -139,20 +141,50 @@ a:focus-visible, button:focus-visible, summary:focus-visible {
   place-items: center;
   padding: 0 .625rem;
   border: 0;
-  border-radius: .45rem;
+  border-radius: 999px;
   color: inherit;
   background: transparent;
   cursor: pointer;
 }
 
+.book-controls .book-directory {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: .4rem;
+  padding-inline: .65rem .4rem;
+  font-size: .8125rem;
+  font-weight: 600;
+}
+
+.book-chapter {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.book-directory::after {
+  width: .36rem;
+  height: .36rem;
+  flex: none;
+  border-right: 1px solid;
+  border-bottom: 1px solid;
+  transform: rotate(225deg);
+  content: "";
+}
+
+.book-directory[aria-expanded="true"]::after { transform: rotate(45deg); }
+.book-controls .book-step { flex: none; padding-inline: 0; }
+
 .book-controls button:hover, .book-directory[aria-expanded="true"] { background: #e7f2e9; }
 .book-controls button:disabled { opacity: .32; cursor: default; }
 
 .book-position {
-  margin-inline: auto;
+  flex: none;
   color: var(--ink);
-  font-size: .875rem;
+  font-size: .75rem;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .book-step::before {
@@ -258,6 +290,8 @@ a:focus-visible, button:focus-visible, summary:focus-visible {
 }
 
 .chapters a:hover { background: #e7f5e9; }
+.chapter-cover { grid-column: 1 / -1; }
+.chapters a[aria-current="location"] { border-color: #9bc7ae; background: #e7f2e9; }
 
 .panel-heading { margin: 0 0 .85rem; }
 .panel-heading img { width: 100%; height: auto; }
