@@ -26,6 +26,7 @@ body {
 }
 
 img { display: block; }
+img[data-src] { visibility: hidden; }
 a { color: inherit; }
 button { font: inherit; }
 
@@ -42,6 +43,30 @@ a:focus-visible, button:focus-visible, summary:focus-visible {
   background: var(--paper);
   box-shadow: 0 12px 50px #244f3420;
 }
+
+.music-toggle {
+  position: fixed;
+  z-index: 4;
+  top: calc(.625rem + env(safe-area-inset-top, 0px));
+  right: .625rem;
+  right: max(calc(.625rem + env(safe-area-inset-right, 0px)), calc((100% - var(--page-width)) / 2 + .625rem));
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid #b9deca;
+  border-radius: 50%;
+  color: var(--green-ink);
+  background: #f8fdf9;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.music-toggle[hidden] { display: none; }
+.music-toggle[aria-pressed="true"] { color: #fff; background: var(--brand-dark); }
 
 .visually-hidden {
   position: absolute;
@@ -61,7 +86,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible {
 }
 
 .panel--paper {
-  background: #fff url("./assets/page-03-01.webp") center / 108% 128% no-repeat;
+  background: #fff url("./assets/v2/page-03-01.webp") center / 108% 128% no-repeat;
 }
 
 .panel--cover {
@@ -141,7 +166,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible {
   overflow: hidden;
 }
 
-.image-frame > img {
+.image-frame > img, .image-frame > noscript > img {
   position: absolute;
   top: var(--image-y, 0%);
   left: var(--image-x, 0%);
@@ -153,6 +178,11 @@ a:focus-visible, button:focus-visible, summary:focus-visible {
 .image-frame--masked {
   -webkit-mask: var(--mask) center / 100% 100% no-repeat;
   mask: var(--mask) center / 100% 100% no-repeat;
+}
+
+.image-frame--masked:has(> img[data-src]):not(:has(> noscript > img)) {
+  -webkit-mask: none;
+  mask: none;
 }
 
 .shape { background: var(--fill); }
@@ -200,12 +230,26 @@ a:focus-visible, button:focus-visible, summary:focus-visible {
   text-align: center;
 }
 
-.values::after {
+.values-art {
+  position: relative;
   display: block;
   margin: .75rem -1.25rem 0;
   padding-top: 90%;
-  background: linear-gradient(#fff6d6, #fff6d600 18%),
-    url("./assets/page-02-01.webp") center bottom / 100% auto no-repeat;
+  overflow: hidden;
+}
+
+.values-art img {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: auto;
+}
+
+.values-art::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(#fff6d6, #fff6d600 18%);
   content: "";
 }
 
@@ -272,7 +316,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible {
 
 .contacts, .location {
   color: #fff;
-  background: var(--brand-dark) url("./assets/page-45-01.webp") center bottom / cover no-repeat;
+  background: var(--brand-dark) url("./assets/v2/page-45-01.webp") center bottom / cover no-repeat;
 }
 
 .contacts { padding-top: 1.65rem; }
@@ -401,9 +445,16 @@ a:focus-visible, button:focus-visible, summary:focus-visible {
 .image-dialog img { max-width: 100%; height: auto; }
 
 @media (prefers-reduced-motion: no-preference) {
-  .panel.is-entering { animation: arrive 360ms ease-out both; }
+  .cover-intro > img, .cover-service > img { animation: arrive 380ms ease-out both; }
+  .cover-service > img { animation-delay: var(--delay, 80ms); }
+  .panel.is-entering > .panel-heading, .panel.is-entering > .copy {
+    animation: arrive 320ms ease-out both;
+  }
+  .panel.is-entering > .artwork, .panel.is-entering > .quality-group {
+    animation: arrive 380ms ease-out 55ms both;
+  }
   @keyframes arrive {
-    from { opacity: .58; transform: translateY(.4rem); }
+    from { opacity: .68; transform: translateY(.45rem); }
     to { opacity: 1; transform: translateY(0); }
   }
 }

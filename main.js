@@ -2,6 +2,8 @@
 
 const feedback = document.querySelector('.copy-feedback');
 const gallery = document.querySelector('.image-dialog');
+const music = document.querySelector('#background-music');
+const musicToggle = document.querySelector('.music-toggle');
 let feedbackTimeout;
 
 function showFeedback(message) {
@@ -10,6 +12,37 @@ function showFeedback(message) {
   feedbackTimeout = window.setTimeout(() => {
     feedback.textContent = '';
   }, 3000);
+}
+
+function updateMusicToggle() {
+  const playing = !music.paused && !music.ended && !music.error;
+  musicToggle.setAttribute('aria-pressed', String(playing));
+  musicToggle.title = playing ? '暂停背景音乐' : '播放背景音乐';
+  musicToggle.firstElementChild.textContent = playing ? 'Ⅱ' : '♫';
+}
+
+if (music && musicToggle) {
+  musicToggle.hidden = false;
+  for (const event of ['play', 'pause', 'ended', 'error']) {
+    music.addEventListener(event, updateMusicToggle);
+  }
+  musicToggle.addEventListener('click', () => {
+    if (!music.paused) {
+      music.pause();
+      return;
+    }
+    if (!music.hasAttribute('src')) {
+      music.src = music.dataset.src;
+    } else if (music.error) {
+      music.load();
+    }
+    music.play()?.catch((error) => {
+      if (error.name !== 'AbortError') {
+        updateMusicToggle();
+        showFeedback('音乐播放失败，请点按重试');
+      }
+    });
+  });
 }
 
 function copyWithSelection(text) {
@@ -78,6 +111,27 @@ if (typeof gallery?.showModal === 'function') {
   });
 }
 
+const deferredImages = document.querySelectorAll('img[data-src]');
+
+function loadImage(image) {
+  image.src = image.dataset.src;
+  delete image.dataset.src;
+}
+
+if ('IntersectionObserver' in window) {
+  const nearViewport = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      loadImage(entry.target);
+      nearViewport.unobserve(entry.target);
+    }
+  }, { rootMargin: '155px 0px' });
+
+  deferredImages.forEach((image) => nearViewport.observe(image));
+} else {
+  deferredImages.forEach(loadImage);
+}
+
 if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
   const observer = new IntersectionObserver((entries) => {
     for (const entry of entries) {
@@ -85,7 +139,7 @@ if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-mot
       entry.target.classList.add('is-entering');
       observer.unobserve(entry.target);
     }
-  }, { threshold: 0.1 });
+  }, { threshold: 0 });
 
   document.querySelectorAll('[data-reveal]').forEach((panel) => observer.observe(panel));
 }
